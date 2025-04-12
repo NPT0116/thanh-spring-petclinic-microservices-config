@@ -1,7 +1,12 @@
 # COMMON APPLICATION PROPERTIES
+
 server:
+  # start services on random port by default
+  port: 0
+  # The stop processing uses a timeout which provides a grace period during which existing requests will be allowed to complete but no new requests will be permitted
   shutdown: graceful
 
+# embedded database init, supports mysql too trough the 'mysql' spring profile
 spring:
   sql:
     init:
@@ -12,66 +17,38 @@ spring:
       probability: 1.0
   cloud:
     config:
+      # Allow the microservices to override the remote properties with their own System properties or config file
       allow-override: true
+      # Override configuration with any local property source
       override-none: true
-    loadbalancer:
-      ribbon:
-        enabled: false
-      cache:
-        ttl: 5s
-    gateway:
-      httpclient:
-        connect-timeout: 2000
-        response-timeout: 5s
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: none
 
-# Eureka Configuration
-eureka:
-  instance:
-    leaseRenewalIntervalInSeconds: 10
-    leaseExpirationDurationInSeconds: 30
-    preferIpAddress: true
-    instanceId: ${spring.application.name}:${random.value}
-  client:
-    registerWithEureka: true
-    fetchRegistry: true
-    registry-fetch-interval-seconds: 5
-    serviceUrl:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+# Spring Boot 1.5 makes actuator secure by default
+management.security.enabled: false
+# Enable all Actuators and not only the two available by default /health and /info starting Spring Boot 2.0
+management.endpoints.web.exposure.include: "*"
 
-# Circuit Breaker Configuration
-resilience4j:
-  circuitbreaker:
-    instances:
-      default:
-        slidingWindowSize: 10
-        failureRateThreshold: 50
-        waitDurationInOpenState: 10000
-        permittedNumberOfCallsInHalfOpenState: 3
-  retry:
-    instances:
-      default:
-        maxAttempts: 3
-        waitDuration: 1000
-        enableExponentialBackoff: true
-        exponentialBackoffMultiplier: 2
+# Temporary hack required by the Spring Boot 2 / Spring Cloud Finchley branch
+# Waiting issue https://github.com/spring-projects/spring-boot/issues/13042
+spring.cloud.refresh.refreshable: false
 
-# Actuator Configuration
+# Logging
+logging.level.org.springframework: INFO
+
+# Metrics
 management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
   endpoint:
-    health:
-      show-details: always
     metrics:
       enabled: true
     prometheus:
       enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
   metrics:
     export:
       prometheus:
@@ -80,39 +57,24 @@ management:
     sampling:
       probability: 1
 
-# Logging
-logging:
-  level:
-    org.springframework: INFO
-    org.springframework.cloud.netflix.eureka: INFO
-    com.netflix.discovery: INFO
-    com.netflix.eureka: INFO
-
+# Chaos Engineering
 ---
-# Docker Profile
 spring:
   config:
     activate:
-      on-profile: docker
-    import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
-  cloud:
-    config:
-      fail-fast: true
-      retry:
-        initial-interval: 1500
-        multiplier: 1.5
-        max-attempts: 6
-        max-interval: 4000
-
-eureka:
-  instance:
-    preferIpAddress: true
-  client:
-    serviceUrl:
-      defaultZone: http://discovery-server:8761/eureka/
+      on-profile: chaos-monkey
+management.endpoint.chaosmonkey.enabled: true
+chaos:
+  monkey:
+    enabled: true
+    watcher:
+      component: false
+      controller: false
+      repository: false
+      rest-controller: false
+      service: false
 
 ---
-# MySQL Profile
 spring:
   config:
     activate:
