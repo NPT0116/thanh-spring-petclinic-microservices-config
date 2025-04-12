@@ -15,19 +15,19 @@ spring:
         - id: vets-service
           uri: lb://vets-service
           predicates:
-            - Path=/api/vet/**, /api/vets/**
+            - Path=/api/vet/**
           filters:
             - StripPrefix=2
         - id: visits-service
           uri: lb://visits-service
           predicates:
-            - Path=/api/visit/**, /api/visits/**
+            - Path=/api/visit/**
           filters:
             - StripPrefix=2
         - id: customers-service
           uri: lb://customers-service
           predicates:
-            - Path=/api/customer/**, /api/customers/**, /api/owners/**
+            - Path=/api/customer/**
           filters:
             - StripPrefix=2
         - id: genai-service
@@ -36,6 +36,7 @@ spring:
             - Path=/api/genai/**
           filters:
             - StripPrefix=2
+            - CircuitBreaker=name=genaiCircuitBreaker,fallbackUri=/fallback
 
 server:
   port: 8080
