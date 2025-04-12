@@ -17,6 +17,12 @@ spring:
     loadbalancer:
       ribbon:
         enabled: false
+      cache:
+        ttl: 5s
+    gateway:
+      httpclient:
+        connect-timeout: 2000
+        response-timeout: 5s
   jpa:
     open-in-view: false
     hibernate:
@@ -82,22 +88,13 @@ logging:
     com.netflix.discovery: INFO
     com.netflix.eureka: INFO
 
-# Service Timeouts
-spring:
-  cloud:
-    loadbalancer:
-      cache:
-        ttl: 5s
-    gateway:
-      httpclient:
-        connect-timeout: 2000
-        response-timeout: 5s
-
 ---
+# Docker Profile
 spring:
   config:
     activate:
       on-profile: docker
+    import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
   cloud:
     config:
       fail-fast: true
@@ -115,6 +112,7 @@ eureka:
       defaultZone: http://discovery-server:8761/eureka/
 
 ---
+# MySQL Profile
 spring:
   config:
     activate:
