@@ -10,6 +10,8 @@ server:
 spring:
   sql:
     init:
+      mode: always
+
       schema-locations: classpath*:db/hsqldb/schema.sql
       data-locations: classpath*:db/hsqldb/data.sql
   sleuth:
