@@ -90,3 +90,13 @@ spring:
       schema-locations: classpath*:db/mysql/schema.sql
       data-locations: classpath*:db/mysql/data.sql
       mode: ALWAYS
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath*:db/hsqldb/schema.sql
+      data-locations: classpath*:db/hsqldb/data.sql
